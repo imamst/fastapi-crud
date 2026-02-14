@@ -11,7 +11,7 @@ class TeaRequest(BaseModel):
 class TeaResponse(BaseModel):
     id: str
     name: str
-    description: str
+    description: Optional[str] = None
     price: float
     tea_type: str
     origin: str
