@@ -2,7 +2,7 @@ from sqlmodel import select
 from app.models.database import Coffee
 from app.models.engine import get_db
 from app.schema.coffee import CoffeeRequest, CoffeeResponse
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 
 from app.utils.query_params import standard_params
 
@@ -27,3 +27,10 @@ def create_coffee(request: CoffeeRequest, db = Depends(get_db)):
     db.refresh(new_coffee)
 
     return new_coffee
+
+@coffee_router.get("/coffees/{id}", status_code=status.HTTP_200_OK)
+def get_coffee(id: int, db = Depends(get_db)):
+    coffee = db.get(Coffee, id)
+    if not coffee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
+    return coffee
