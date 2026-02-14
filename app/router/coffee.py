@@ -1,7 +1,7 @@
 from sqlmodel import select
 from app.models.database import Coffee
 from app.models.engine import get_db
-from app.schema.coffee import CoffeeResponse
+from app.schema.coffee import CoffeeRequest, CoffeeResponse
 from fastapi import APIRouter, Depends, status
 
 from app.utils.query_params import standard_params
@@ -11,15 +11,19 @@ coffee_router = APIRouter(tags=["Coffee"])
 @coffee_router.get("/coffees", status_code=status.HTTP_200_OK)
 def get_coffees(params = Depends(standard_params), db = Depends(get_db)):
     coffees = db.exec(select(Coffee)).all()
-    return [CoffeeResponse.model_validate(coffee) for coffee in coffees]
+    return {"coffees": coffees}
 
 @coffee_router.post("/coffees", status_code=status.HTTP_201_CREATED)
-def create_coffee():
-    return CoffeeResponse(
-        id="1",
-        name="Ethiopia Yirgacheffe",
-        description="Bright and fruity single-origin coffee",
-        price=15.99,
-        roast_level="light",
-        origin="Ethiopia"
+def create_coffee(request: CoffeeRequest, db = Depends(get_db)):
+    new_coffee = Coffee(
+        name=request.name,
+        description=request.description,
+        price=request.price,
+        roast_level=request.roast_level,
+        origin=request.origin
     )
+    db.add(new_coffee)
+    db.commit()
+    db.refresh(new_coffee)
+
+    return new_coffee
