@@ -34,3 +34,17 @@ def get_coffee(id: int, db = Depends(get_db)):
     if not coffee:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
     return coffee
+
+@coffee_router.put("/coffees/{id}", status_code=status.HTTP_200_OK)
+def update_coffee(id: int, request: CoffeeRequest, db = Depends(get_db)):
+    coffee = db.get(Coffee, id)
+    if not coffee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
+    coffee.name = request.name
+    coffee.description = request.description
+    coffee.price = request.price
+    coffee.roast_level = request.roast_level
+    coffee.origin = request.origin
+    db.commit()
+    db.refresh(coffee)
+    return coffee
