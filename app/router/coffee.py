@@ -48,3 +48,12 @@ def update_coffee(id: int, request: CoffeeRequest, db = Depends(get_db)):
     db.commit()
     db.refresh(coffee)
     return coffee
+
+@coffee_router.delete("/coffees/{id}", status_code=status.HTTP_200_OK)
+def delete_coffee(id: int, db = Depends(get_db)):
+    coffee = db.get(Coffee, id)
+    if not coffee:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
+    db.delete(coffee)
+    db.commit()
+    return {"message": "Coffee deleted successfully"}
