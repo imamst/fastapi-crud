@@ -13,3 +13,14 @@ dependencies = [
     "sqlmodel>=0.0.33",
     "uvicorn>=0.40.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.1",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]

@@ -1,26 +1,29 @@
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
+
 from app.models.database import Coffee
 from app.models.engine import get_db
-from app.schema.coffee import CoffeeRequest, CoffeeResponse
-from fastapi import APIRouter, Depends, status, HTTPException
-
+from app.schema.coffee import CoffeeRequest
 from app.utils.query_params import standard_params
 
 coffee_router = APIRouter(tags=["Coffee"])
 
+
 @coffee_router.get("/coffees", status_code=status.HTTP_200_OK)
-def get_coffees(params = Depends(standard_params), db = Depends(get_db)):
+def get_coffees(params=Depends(standard_params), db=Depends(get_db)):
     coffees = db.exec(select(Coffee)).all()
     return {"coffees": coffees}
 
+
 @coffee_router.post("/coffees", status_code=status.HTTP_201_CREATED)
-def create_coffee(request: CoffeeRequest, db = Depends(get_db)):
+def create_coffee(request: CoffeeRequest, db=Depends(get_db)):
     new_coffee = Coffee(
+        id=None,
         name=request.name,
         description=request.description,
         price=request.price,
         roast_level=request.roast_level,
-        origin=request.origin
+        origin=request.origin,
     )
     db.add(new_coffee)
     db.commit()
@@ -28,15 +31,17 @@ def create_coffee(request: CoffeeRequest, db = Depends(get_db)):
 
     return new_coffee
 
+
 @coffee_router.get("/coffees/{id}", status_code=status.HTTP_200_OK)
-def get_coffee(id: int, db = Depends(get_db)):
+def get_coffee(id: int, db=Depends(get_db)):
     coffee = db.get(Coffee, id)
     if not coffee:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
     return coffee
 
+
 @coffee_router.put("/coffees/{id}", status_code=status.HTTP_200_OK)
-def update_coffee(id: int, request: CoffeeRequest, db = Depends(get_db)):
+def update_coffee(id: int, request: CoffeeRequest, db=Depends(get_db)):
     coffee = db.get(Coffee, id)
     if not coffee:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
@@ -49,8 +54,9 @@ def update_coffee(id: int, request: CoffeeRequest, db = Depends(get_db)):
     db.refresh(coffee)
     return coffee
 
+
 @coffee_router.delete("/coffees/{id}", status_code=status.HTTP_200_OK)
-def delete_coffee(id: int, db = Depends(get_db)):
+def delete_coffee(id: int, db=Depends(get_db)):
     coffee = db.get(Coffee, id)
     if not coffee:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Coffee not found")
